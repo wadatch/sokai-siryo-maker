@@ -1,9 +1,13 @@
 // PTA総会資料ツクール - フロントエンドのみ（React + pdf-lib + Tailwind CSS）
 // 簡易構成: PDF結合、ページ番号追加、議案番号追加
 
-import React, { useState } from "react";
+import React, { useState, useEffect, ChangeEvent, DragEvent } from "react";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
+import * as pdfjsLib from 'pdfjs-dist';
+
+// PDF.jsのワーカーを設定
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 type AgendaType = 'agenda' | 'attachment' | 'reference' | 'none';
 
@@ -12,6 +16,7 @@ interface FileWithAgenda {
   agendaType: AgendaType;
   agendaNumber: number;
   pageCount?: number;
+  thumbnail?: string;
 }
 
 function App() {
@@ -19,41 +24,72 @@ function App() {
   const [startPageNumberAt, setStartPageNumberAt] = useState(1);
   const [addPageNumbers, setAddPageNumbers] = useState(true);
   const [draggedFile, setDraggedFile] = useState<number | null>(null);
+  const [pageNumberPosition, setPageNumberPosition] = useState<'bottom' | 'top'>('bottom');
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const generateThumbnail = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 0.2 });
+      
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      if (!context) throw new Error('Canvas context not available');
+      
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
+      await page.render({
+        canvasContext: context,
+        viewport: viewport
+      }).promise;
+      
+      return canvas.toDataURL('image/jpeg', 0.5);
+    } catch (error) {
+      console.error('サムネイル生成エラー:', error);
+      return '';
+    }
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const selected = await Promise.all(Array.from(e.target.files).map(async file => {
+      const selected = await Promise.all(Array.from(e.target.files).map(async (file: File) => {
         try {
           const data = await file.arrayBuffer();
           const pdf = await PDFDocument.load(data);
+          const thumbnail = await generateThumbnail(file);
           return {
             file,
             agendaType: 'none' as AgendaType,
             agendaNumber: 1,
-            pageCount: pdf.getPageCount()
+            pageCount: pdf.getPageCount(),
+            thumbnail
           };
         } catch (error) {
-          console.error(`ファイル ${file.name} のページ数取得に失敗しました:`, error);
+          console.error(`ファイル ${file.name} の処理に失敗しました:`, error);
           return {
             file,
             agendaType: 'none' as AgendaType,
             agendaNumber: 1,
-            pageCount: undefined
+            pageCount: undefined,
+            thumbnail: ''
           };
         }
       }));
-      setFiles(prev => [...prev, ...selected]);
+      setFiles((prev: FileWithAgenda[]) => [...prev, ...selected]);
     }
   };
 
   const handleAgendaTypeChange = (index: number, type: AgendaType) => {
-    setFiles(prev => prev.map((item, i) => 
+    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) => 
       i === index ? { ...item, agendaType: type } : item
     ));
   };
 
   const handleAgendaNumberChange = (index: number, number: number) => {
-    setFiles(prev => prev.map((item, i) => 
+    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) => 
       i === index ? { ...item, agendaNumber: number } : item
     ));
   };
@@ -81,32 +117,48 @@ function App() {
     setDraggedFile(null);
   };
 
-  const handleFileDrop = async (e: React.DragEvent) => {
+  const handleFileDrop = async (e: DragEvent) => {
     e.preventDefault();
-    const droppedFiles = Array.from(e.dataTransfer.files).filter(file => file.type === 'application/pdf');
+    const droppedFiles = Array.from(e.dataTransfer.files).filter((file: File) => file.type === 'application/pdf');
     if (droppedFiles.length === 0) return;
 
-    const selected = await Promise.all(droppedFiles.map(async file => {
+    const selected = await Promise.all(droppedFiles.map(async (file: File) => {
       try {
         const data = await file.arrayBuffer();
         const pdf = await PDFDocument.load(data);
+        const thumbnail = await generateThumbnail(file);
         return {
           file,
           agendaType: 'none' as AgendaType,
           agendaNumber: 1,
-          pageCount: pdf.getPageCount()
+          pageCount: pdf.getPageCount(),
+          thumbnail
         };
       } catch (error) {
-        console.error(`ファイル ${file.name} のページ数取得に失敗しました:`, error);
+        console.error(`ファイル ${file.name} の処理に失敗しました:`, error);
         return {
           file,
           agendaType: 'none' as AgendaType,
           agendaNumber: 1,
-          pageCount: undefined
+          pageCount: undefined,
+          thumbnail: ''
         };
       }
     }));
-    setFiles(prev => [...prev, ...selected]);
+    setFiles((prev: FileWithAgenda[]) => [...prev, ...selected]);
+  };
+
+  const handleRemoveFile = (index: number) => {
+    setFiles((prev: FileWithAgenda[]) => prev.filter((_: FileWithAgenda, i: number) => i !== index));
+  };
+
+  const handleMerge = async () => {
+    setIsProcessing(true);
+    try {
+      await handleGenerate();
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleGenerate = async () => {
@@ -219,163 +271,183 @@ function App() {
   
 
   return (
-    <div className="p-4 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">総会資料メーカー</h1>
-      <p className="text-sm text-gray-600 mb-4">
-        このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
-        すべての処理はお使いのブラウザ内で行われ、プライバシーが保護されます。
-      </p>
-      
-      <div className="mb-6">
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            PDFファイルを選択（複数可）
-          </label>
-          <div className="flex items-center justify-center w-full">
-            <label 
-              className="flex flex-col w-full h-32 border-4 border-dashed hover:bg-gray-100 hover:border-gray-300"
-              onDragOver={handleDragOver}
-              onDrop={handleFileDrop}
-            >
-              <div className="flex flex-col items-center justify-center pt-7">
-                <svg className="w-12 h-12 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                </svg>
-                <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
-                  クリックまたはドラッグ＆ドロップでファイルを選択
-                </p>
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">総会資料メーカー</h1>
+          <p className="text-sm text-gray-600 mt-2">
+            このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
+            すべての処理はお使いのブラウザ内で行われ、プライバシーが保護されます。
+          </p>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  開始ページ番号
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={startPageNumberAt}
+                  onChange={(e) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
               </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ページ番号の位置
+                </label>
+                <select
+                  value={pageNumberPosition}
+                  onChange={(e) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
+                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="bottom">下部中央</option>
+                  <option value="top">上部中央</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200">
               <input
                 type="file"
+                accept=".pdf"
                 multiple
-                accept="application/pdf"
                 onChange={handleFileChange}
-                className="opacity-0"
+                className="hidden"
+                id="file-input"
               />
-            </label>
+              <label
+                htmlFor="file-input"
+                className="cursor-pointer block"
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+              >
+                <div className="space-y-2">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium text-blue-600 hover:text-blue-500">クリックしてファイルを選択</span>
+                    またはドラッグ＆ドロップ
+                  </div>
+                  <p className="text-xs text-gray-500">PDFファイルのみ対応</p>
+                </div>
+              </label>
+            </div>
+
+            {files.length > 0 && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-medium text-gray-900">アップロードされたファイル</h2>
+                <div className="space-y-4">
+                  {files.map((file, index) => (
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`bg-gray-50 rounded-lg p-4 cursor-move ${
+                        draggedFile === index ? 'opacity-50' : ''
+                      }`}
+                    >
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+                          {file.thumbnail ? (
+                            <img
+                              src={file.thumbnail}
+                              alt={`${file.name}のサムネイル`}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {file.name}
+                                {file.pageCount && <span className="text-gray-500 ml-2">（{file.pageCount}ページ）</span>}
+                              </p>
+                            </div>
+                            <button
+                              onClick={() => handleRemoveFile(index)}
+                              className="ml-2 text-gray-400 hover:text-gray-500"
+                            >
+                              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="mt-3 space-y-3">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                種類
+                              </label>
+                              <select
+                                value={file.agendaType}
+                                onChange={(e) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
+                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              >
+                                <option value="none">なし</option>
+                                <option value="agenda">議案</option>
+                                <option value="attachment">添付資料</option>
+                                <option value="reference">参考資料</option>
+                              </select>
+                            </div>
+                            {file.agendaType !== 'none' && (
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  {file.agendaType === 'agenda' ? '議案番号' : '番号'}
+                                </label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={file.agendaNumber}
+                                  onChange={(e) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
+                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleMerge}
+                    disabled={isProcessing}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        処理中...
+                      </>
+                    ) : (
+                      'PDFを結合'
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-
-        {files.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">選択されたファイル（ドラッグで順番を変更）：</h3>
-            <ul className="border rounded-md divide-y divide-gray-200">
-              {files.map((item, index) => (
-                <li
-                  key={index}
-                  draggable
-                  onDragStart={() => handleDragStart(index)}
-                  onDragOver={handleDragOver}
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragEnd={handleDragEnd}
-                  className={`px-4 py-2 flex flex-col space-y-2 ${
-                    draggedFile === index ? 'bg-gray-100' : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <svg className="w-5 h-5 text-gray-400 cursor-move" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16"></path>
-                      </svg>
-                      <span className="text-gray-600">
-                        {item.file.name}
-                        {item.pageCount !== undefined && (
-                          <span className="ml-2 text-sm text-gray-500">
-                            （{item.pageCount}ページ）
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                    <button
-                      onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      削除
-                    </button>
-                  </div>
-                  <div className="flex items-center space-x-4 ml-8">
-                    <select
-                      value={item.agendaType}
-                      onChange={(e) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
-                      className="border rounded px-2 py-1 text-sm"
-                    >
-                      <option value="none">議案番号なし</option>
-                      <option value="agenda">議案</option>
-                      <option value="attachment">添付資料</option>
-                      <option value="reference">参考資料</option>
-                    </select>
-                    {item.agendaType !== 'none' && (
-                      <div className="flex items-center space-x-2">
-                        {item.agendaType === 'agenda' ? (
-                          <>
-                            <span className="text-sm">第</span>
-                            <input
-                              type="number"
-                              value={item.agendaNumber}
-                              onChange={(e) => handleAgendaNumberChange(index, parseInt(e.target.value))}
-                              className="w-16 border rounded px-1 text-sm"
-                              min={1}
-                            />
-                            <span className="text-sm">号</span>
-                          </>
-                        ) : (
-                          <input
-                            type="number"
-                            value={item.agendaNumber}
-                            onChange={(e) => handleAgendaNumberChange(index, parseInt(e.target.value))}
-                            className="w-16 border rounded px-1 text-sm"
-                            min={1}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      <div className="mb-4">
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={addPageNumbers}
-            onChange={(e) => setAddPageNumbers(e.target.checked)}
-            className="rounded text-blue-600 focus:ring-blue-500"
-          />
-          <span>ページ番号を追加</span>
-        </label>
-
-        {addPageNumbers && (
-          <div className="ml-6 mt-2">
-            <label className="flex items-center space-x-2">
-              <span>ページ番号の開始位置:</span>
-              <input
-                type="number"
-                value={startPageNumberAt}
-                onChange={(e) => setStartPageNumberAt(parseInt(e.target.value))}
-                className="w-16 border rounded px-1"
-                min={1}
-              />
-              <span>ページ目から</span>
-            </label>
-          </div>
-        )}
-      </div>
-
-      <button
-        onClick={handleGenerate}
-        className={`w-full py-2 px-4 rounded-md text-white font-medium ${
-          files.length === 0
-            ? 'bg-gray-400 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700'
-        }`}
-        disabled={files.length === 0}
-      >
-        {files.length === 0 ? 'PDFファイルを選択してください' : '生成・ダウンロード'}
-      </button>
+      </main>
     </div>
   );
 }
