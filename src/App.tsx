@@ -36,6 +36,7 @@ function App() {
   const [addPageNumbers, setAddPageNumbers] = useState(true);
   const [pageNumberFormat, setPageNumberFormat] = useState<'number' | 'dash' | 'page'>('number');
   const [draggedFile, setDraggedFile] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [pageNumberPosition, setPageNumberPosition] = useState<'bottom' | 'top'>('bottom');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -118,23 +119,32 @@ function App() {
     setDraggedFile(index);
   };
 
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>, index: number) => {
     e.preventDefault();
+    if (draggedFile !== null && draggedFile !== index) {
+      setDragOverIndex(index);
+      // リアルタイムで要素を入れ替え
+      const newFiles = [...files];
+      const [draggedItem] = newFiles.splice(draggedFile, 1);
+      newFiles.splice(index, 0, draggedItem);
+      setFiles(newFiles);
+      setDraggedFile(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
   };
 
   const handleDrop = (e: DragEvent<HTMLDivElement>, targetIndex: number) => {
     e.preventDefault();
-    if (draggedFile === null) return;
-
-    const newFiles = [...files];
-    const [draggedItem] = newFiles.splice(draggedFile, 1);
-    newFiles.splice(targetIndex, 0, draggedItem);
-    setFiles(newFiles);
     setDraggedFile(null);
+    setDragOverIndex(null);
   };
 
   const handleDragEnd = () => {
     setDraggedFile(null);
+    setDragOverIndex(null);
   };
 
   const handleFileDrop = async (e: DragEvent) => {
@@ -445,18 +455,26 @@ function App() {
                     <div
                       key={index}
                       draggable
-                      onDragStart={() => handleDragStart(index)}
-                      onDragOver={(e: DragEvent<HTMLDivElement>) => {
-                        e.preventDefault();
+                      className={`bg-gray-50 rounded-lg p-4 cursor-move transition-all duration-150 ease-in-out ${
+                        draggedFile === index ? 'opacity-50 scale-95 shadow-lg' : ''
+                      } ${dragOverIndex === index ? 'border-2 border-blue-500 transform translate-y-4' : 'hover:shadow-md'}`}
+                      style={{
+                        transform: dragOverIndex === index ? 'translateY(1rem)' : 'translateY(0)',
+                        transition: 'transform 150ms ease-in-out'
                       }}
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e, index)}
+                      onDragLeave={handleDragLeave}
                       onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
-                      className={`bg-gray-50 rounded-lg p-4 cursor-move ${
-                        draggedFile === index ? 'opacity-50' : ''
-                      }`}
                     >
-                      <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden">
+                      <div className="flex items-start space-x-6">
+                        <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden relative ml-8">
+                          <div className="absolute -left-4 top-0 bottom-0 w-4 flex flex-col justify-center items-center space-y-1">
+                            <div className="w-1 h-1 rounded-full bg-gray-400"></div>
+                            <div className="w-1 h-1 rounded-full bg-gray-400"></div>
+                            <div className="w-1 h-1 rounded-full bg-gray-400"></div>
+                          </div>
                           {file.thumbnail ? (
                             <img
                               src={file.thumbnail}
