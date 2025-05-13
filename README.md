@@ -1,6 +1,6 @@
 # 総会資料メーカー
 
-[![Build and Deploy](https://github.com/wadatch/sokai-siryo-maker/actions/workflows/build.yml/badge.svg)](https://github.com/wadatch/sokai-siryo-maker/actions/workflows/build.yml)
+[![Deploy to GitHub Pages](https://github.com/wadatch/sokai-siryo-maker/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/wadatch/sokai-siryo-maker/actions/workflows/pages/pages-build-deployment)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-4.9.5-blue.svg)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
