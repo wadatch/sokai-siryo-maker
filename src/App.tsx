@@ -185,7 +185,7 @@ function App() {
     try {
       let fontBytes;
       try {
-        const response = await fetch("/fonts/NotoSansJP-Regular.ttf");
+        const response = await fetch("/sokai-siryo-maker/fonts/NotoSansJP-Regular.ttf");
         if (!response.ok) {
           throw new Error("フォントファイルの読み込みに失敗しました");
         }
