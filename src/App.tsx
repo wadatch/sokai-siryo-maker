@@ -190,6 +190,9 @@ function App() {
           throw new Error("フォントファイルの読み込みに失敗しました");
         }
         fontBytes = await response.arrayBuffer();
+        if (!fontBytes || fontBytes.byteLength === 0) {
+          throw new Error("フォントファイルが空です");
+        }
       } catch (fontError) {
         console.error("フォント読み込みエラー:", fontError);
         throw new Error("日本語フォントの読み込みに失敗しました。フォントファイルが正しく配置されているか確認してください。");
@@ -197,7 +200,13 @@ function App() {
 
       const mergedPdf = await PDFDocument.create();
       mergedPdf.registerFontkit(fontkit);
-      const customFont = await mergedPdf.embedFont(fontBytes);
+      let customFont;
+      try {
+        customFont = await mergedPdf.embedFont(fontBytes);
+      } catch (embedError) {
+        console.error("フォント埋め込みエラー:", embedError);
+        throw new Error("フォントの埋め込みに失敗しました。フォントファイルの形式が正しくない可能性があります。");
+      }
       let pageIndex = 0;
 
       if (files.length === 0) {
