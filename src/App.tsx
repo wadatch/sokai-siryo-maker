@@ -7,6 +7,13 @@ import fontkit from "@pdf-lib/fontkit";
 import * as pdfjsLib from 'pdfjs-dist';
 import { copyrightInfo } from './config/copyright';
 
+// Google FontsからNoto Sans JPを読み込む
+const fontUrl = 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400&display=swap';
+const link = document.createElement('link');
+link.href = fontUrl;
+link.rel = 'stylesheet';
+document.head.appendChild(link);
+
 // PDF.jsのワーカーを設定
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
