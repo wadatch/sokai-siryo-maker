@@ -5,6 +5,7 @@ import React, { useState, useEffect, ChangeEvent, DragEvent } from "react";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import * as pdfjsLib from 'pdfjs-dist';
+import { copyrightInfo } from './config/copyright';
 
 // PDF.jsのワーカーを設定
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
@@ -22,7 +23,9 @@ interface FileWithAgenda {
 function App() {
   const [files, setFiles] = useState<FileWithAgenda[]>([]);
   const [startPageNumberAt, setStartPageNumberAt] = useState(1);
+  const [endPageNumberAt, setEndPageNumberAt] = useState(1);
   const [addPageNumbers, setAddPageNumbers] = useState(true);
+  const [pageNumberFormat, setPageNumberFormat] = useState<'number' | 'dash' | 'page'>('number');
   const [draggedFile, setDraggedFile] = useState<number | null>(null);
   const [pageNumberPosition, setPageNumberPosition] = useState<'bottom' | 'top'>('bottom');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,30 +58,36 @@ function App() {
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const selected = await Promise.all(Array.from(e.target.files).map(async (file: File) => {
-        try {
-          const data = await file.arrayBuffer();
-          const pdf = await PDFDocument.load(data);
-          const thumbnail = await generateThumbnail(file);
-          return {
-            file,
-            agendaType: 'none' as AgendaType,
-            agendaNumber: 1,
-            pageCount: pdf.getPageCount(),
-            thumbnail
-          };
-        } catch (error) {
-          console.error(`ファイル ${file.name} の処理に失敗しました:`, error);
-          return {
-            file,
-            agendaType: 'none' as AgendaType,
-            agendaNumber: 1,
-            pageCount: undefined,
-            thumbnail: ''
-          };
-        }
-      }));
-      setFiles((prev: FileWithAgenda[]) => [...prev, ...selected]);
+      try {
+        const selected = await Promise.all(Array.from(e.target.files).map(async (file: File) => {
+          try {
+            const data = await file.arrayBuffer();
+            const pdf = await PDFDocument.load(data);
+            const thumbnail = await generateThumbnail(file);
+            return {
+              file,
+              agendaType: 'none' as AgendaType,
+              agendaNumber: 1,
+              pageCount: pdf.getPageCount(),
+              thumbnail
+            };
+          } catch (error) {
+            console.error(`ファイル ${file.name} の処理に失敗しました:`, error);
+            throw new Error(`ファイル ${file.name} を開けませんでした。暗号化されているか、破損している可能性があります。`);
+          }
+        }));
+        setFiles((prev: FileWithAgenda[]) => {
+          const newFiles = [...prev, ...selected];
+          const totalPages = newFiles.reduce((sum, file) => sum + (file.pageCount || 0), 0);
+          setEndPageNumberAt(totalPages);
+          return newFiles;
+        });
+      } catch (error) {
+        console.error('ファイル処理エラー:', error);
+        alert(error instanceof Error ? error.message : 'ファイルの処理中にエラーが発生しました。');
+        // ファイル入力をリセット
+        e.target.value = '';
+      }
     }
   };
 
@@ -122,34 +131,45 @@ function App() {
     const droppedFiles = Array.from(e.dataTransfer.files).filter((file: File) => file.type === 'application/pdf');
     if (droppedFiles.length === 0) return;
 
-    const selected = await Promise.all(droppedFiles.map(async (file: File) => {
-      try {
-        const data = await file.arrayBuffer();
-        const pdf = await PDFDocument.load(data);
-        const thumbnail = await generateThumbnail(file);
-        return {
-          file,
-          agendaType: 'none' as AgendaType,
-          agendaNumber: 1,
-          pageCount: pdf.getPageCount(),
-          thumbnail
-        };
-      } catch (error) {
-        console.error(`ファイル ${file.name} の処理に失敗しました:`, error);
-        return {
-          file,
-          agendaType: 'none' as AgendaType,
-          agendaNumber: 1,
-          pageCount: undefined,
-          thumbnail: ''
-        };
-      }
-    }));
-    setFiles((prev: FileWithAgenda[]) => [...prev, ...selected]);
+    try {
+      const selected = await Promise.all(droppedFiles.map(async (file: File) => {
+        try {
+          const data = await file.arrayBuffer();
+          const pdf = await PDFDocument.load(data);
+          const thumbnail = await generateThumbnail(file);
+          return {
+            file,
+            agendaType: 'none' as AgendaType,
+            agendaNumber: 1,
+            pageCount: pdf.getPageCount(),
+            thumbnail
+          };
+        } catch (error) {
+          console.error(`ファイル ${file.name} の処理に失敗しました:`, error);
+          throw new Error(`ファイル ${file.name} を開けませんでした。暗号化されているか、破損している可能性があります。`);
+        }
+      }));
+      setFiles((prev: FileWithAgenda[]) => {
+        const newFiles = [...prev, ...selected];
+        const totalPages = newFiles.reduce((sum, file) => sum + (file.pageCount || 0), 0);
+        setEndPageNumberAt(totalPages);
+        return newFiles;
+      });
+    } catch (error) {
+      console.error('ファイル処理エラー:', error);
+      alert(error instanceof Error ? error.message : 'ファイルの処理中にエラーが発生しました。');
+    }
   };
 
   const handleRemoveFile = (index: number) => {
-    setFiles((prev: FileWithAgenda[]) => prev.filter((_: FileWithAgenda, i: number) => i !== index));
+    setFiles((prev: FileWithAgenda[]) => {
+      const newFiles = prev.filter((_: FileWithAgenda, i: number) => i !== index);
+      // 全ページ数を計算
+      const totalPages = newFiles.reduce((sum, file) => sum + (file.pageCount || 0), 0);
+      // 終了ページ番号を更新
+      setEndPageNumberAt(totalPages);
+      return newFiles;
+    });
   };
 
   const handleMerge = async () => {
@@ -195,10 +215,22 @@ function App() {
             mergedPdf.addPage(page);
             pageIndex++;
 
-            if (addPageNumbers && pageIndex >= startPageNumberAt) {
+            if (addPageNumbers && pageIndex >= startPageNumberAt && pageIndex <= endPageNumberAt) {
               const { width, height } = page.getSize();
               const pageNumber = pageIndex - startPageNumberAt + 1;
-              page.drawText(`${pageNumber}`, {
+              let pageNumberText = '';
+              switch (pageNumberFormat) {
+                case 'number':
+                  pageNumberText = `${pageNumber}`;
+                  break;
+                case 'dash':
+                  pageNumberText = `- ${pageNumber} -`;
+                  break;
+                case 'page':
+                  pageNumberText = `${pageNumber} ページ`;
+                  break;
+              }
+              page.drawText(pageNumberText, {
                 x: width / 2 - 10,
                 y: 20,
                 size: 10,
@@ -213,7 +245,7 @@ function App() {
               let label = '';
               switch (agendaType) {
                 case 'agenda':
-                  label = `議案第${agendaNumber}号`;
+                  label = `第${agendaNumber}号議案`;
                   break;
                 case 'attachment':
                   label = `添付資料${agendaNumber}`;
@@ -285,6 +317,38 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="space-y-6">
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200"
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={handleFileDrop}
+            >
+              <input
+                type="file"
+                accept=".pdf"
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+                id="file-input"
+              />
+              <label
+                htmlFor="file-input"
+                className="cursor-pointer block"
+              >
+                <div className="space-y-2">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <div className="text-sm text-gray-600">
+                    <span className="font-medium text-blue-600 hover:text-blue-500">クリックしてファイルを選択</span>
+                    またはドラッグ＆ドロップ
+                  </div>
+                  <p className="text-xs text-gray-500">PDFファイルのみ対応</p>
+                </div>
+              </label>
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -295,6 +359,18 @@ function App() {
                   min="1"
                   value={startPageNumberAt}
                   onChange={(e) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  終了ページ番号
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={endPageNumberAt}
+                  onChange={(e) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
                   className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
@@ -311,34 +387,20 @@ function App() {
                   <option value="top">上部中央</option>
                 </select>
               </div>
-            </div>
-
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200">
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-                id="file-input"
-              />
-              <label
-                htmlFor="file-input"
-                className="cursor-pointer block"
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                <div className="space-y-2">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-blue-600 hover:text-blue-500">クリックしてファイルを選択</span>
-                    またはドラッグ＆ドロップ
-                  </div>
-                  <p className="text-xs text-gray-500">PDFファイルのみ対応</p>
-                </div>
-              </label>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ページ番号のフォーマット
+                </label>
+                <select
+                  value={pageNumberFormat}
+                  onChange={(e) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
+                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                >
+                  <option value="number">数字のみ</option>
+                  <option value="dash">- n -</option>
+                  <option value="page">n ページ</option>
+                </select>
+              </div>
             </div>
 
             {files.length > 0 && (
@@ -448,6 +510,21 @@ function App() {
           </div>
         </div>
       </main>
+      <footer className="bg-white border-t border-gray-200 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500">
+            {copyrightInfo.text}{' '}
+            <a
+              href={copyrightInfo.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-500"
+            >
+              {copyrightInfo.linkText}
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
