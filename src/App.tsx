@@ -22,6 +22,7 @@ type AgendaType = 'agenda' | 'attachment' | 'reference' | 'none';
 
 interface FileWithAgenda {
   file: File;
+  name: string;
   agendaType: AgendaType;
   agendaNumber: number;
   pageCount?: number;
@@ -68,13 +69,14 @@ function App() {
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       try {
-        const selected = await Promise.all(Array.from(e.target.files).map(async (file: File) => {
+        const selected = await Promise.all(Array.from(e.target.files as FileList).map(async (file: File) => {
           try {
             const data = await file.arrayBuffer();
             const pdf = await PDFDocument.load(data);
             const thumbnail = await generateThumbnail(file);
             return {
               file,
+              name: file.name,
               agendaType: 'none' as AgendaType,
               agendaNumber: 1,
               pageCount: pdf.getPageCount(),
@@ -116,11 +118,11 @@ function App() {
     setDraggedFile(index);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+  const handleDrop = (e: DragEvent<HTMLDivElement>, targetIndex: number) => {
     e.preventDefault();
     if (draggedFile === null) return;
 
@@ -137,7 +139,7 @@ function App() {
 
   const handleFileDrop = async (e: DragEvent) => {
     e.preventDefault();
-    const droppedFiles = Array.from(e.dataTransfer.files).filter((file: File) => file.type === 'application/pdf');
+    const droppedFiles = Array.from(e.dataTransfer.files as FileList).filter((file: File) => file.type === 'application/pdf');
     if (droppedFiles.length === 0) return;
 
     try {
@@ -148,6 +150,7 @@ function App() {
           const thumbnail = await generateThumbnail(file);
           return {
             file,
+            name: file.name,
             agendaType: 'none' as AgendaType,
             agendaNumber: 1,
             pageCount: pdf.getPageCount(),
@@ -223,7 +226,7 @@ function App() {
       }
 
       for (let i = 0; i < files.length; i++) {
-        const { file, agendaType, agendaNumber } = files[i];
+        const { file, name, agendaType, agendaNumber } = files[i];
         try {
           const data = await file.arrayBuffer();
           const srcPdf = await PDFDocument.load(data);
@@ -299,8 +302,8 @@ function App() {
             }
           });
         } catch (fileError) {
-          console.error(`ファイル ${file.name} の処理中にエラーが発生しました:`, fileError);
-          throw new Error(`ファイル ${file.name} の処理に失敗しました。PDFファイルが正しい形式か確認してください。`);
+          console.error(`ファイル ${name} の処理中にエラーが発生しました:`, fileError);
+          throw new Error(`ファイル ${name} の処理に失敗しました。PDFファイルが正しい形式か確認してください。`);
         }
       }
 
@@ -349,7 +352,7 @@ function App() {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="space-y-6">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200"
-              onDragOver={(e) => {
+              onDragOver={(e: DragEvent<HTMLDivElement>) => {
                 e.preventDefault();
                 e.stopPropagation();
               }}
@@ -389,7 +392,7 @@ function App() {
                   type="number"
                   min="1"
                   value={startPageNumberAt}
-                  onChange={(e) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
                   className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
@@ -401,7 +404,7 @@ function App() {
                   type="number"
                   min="1"
                   value={endPageNumberAt}
-                  onChange={(e) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
                   className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
@@ -411,7 +414,7 @@ function App() {
                 </label>
                 <select
                   value={pageNumberPosition}
-                  onChange={(e) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
                   className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="bottom">下部中央</option>
@@ -424,7 +427,7 @@ function App() {
                 </label>
                 <select
                   value={pageNumberFormat}
-                  onChange={(e) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
                   className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="number">数字のみ</option>
@@ -443,8 +446,10 @@ function App() {
                       key={index}
                       draggable
                       onDragStart={() => handleDragStart(index)}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, index)}
+                      onDragOver={(e: DragEvent<HTMLDivElement>) => {
+                        e.preventDefault();
+                      }}
+                      onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
                       onDragEnd={handleDragEnd}
                       className={`bg-gray-50 rounded-lg p-4 cursor-move ${
                         draggedFile === index ? 'opacity-50' : ''
@@ -488,7 +493,7 @@ function App() {
                               </label>
                               <select
                                 value={file.agendaType}
-                                onChange={(e) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
+                                onChange={(e: ChangeEvent<HTMLSelectElement>) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
                                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                               >
                                 <option value="none">なし</option>
@@ -506,7 +511,7 @@ function App() {
                                   type="number"
                                   min="1"
                                   value={file.agendaNumber}
-                                  onChange={(e) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
+                                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
                                   className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
                               </div>

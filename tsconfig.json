@@ -18,7 +18,10 @@
     "allowJs": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["react", "react-dom"],
+    "typeRoots": ["./node_modules/@types"],
+    "jsxImportSource": "react"
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
