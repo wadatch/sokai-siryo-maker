@@ -6,6 +6,7 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import * as pdfjsLib from 'pdfjs-dist';
 import { copyrightInfo } from './config/copyright';
+import HelpPage from './components/HelpPage';
 
 // Google FontsからNoto Sans JPを読み込む
 const fontUrl = 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400&display=swap';
@@ -36,6 +37,7 @@ function App() {
   const [draggedFile, setDraggedFile] = useState<number | null>(null);
   const [pageNumberPosition, setPageNumberPosition] = useState<'bottom' | 'top'>('bottom');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
 
   const generateThumbnail = async (file: File): Promise<string> => {
     try {
@@ -322,11 +324,24 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">総会資料メーカー</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
-            すべての処理はお使いのブラウザ内で行われ、プライバシーが保護されます。
-          </p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">総会資料メーカー</h1>
+              <p className="text-sm text-gray-600 mt-2">
+                このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
+                すべての処理はお使いのブラウザ内で行われ、プライバシーが保護されます。
+              </p>
+            </div>
+            <button
+              onClick={() => setShowHelp(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none"
+              title="ヘルプ"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -526,6 +541,26 @@ function App() {
           </div>
         </div>
       </main>
+
+      {showHelp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-gray-900">ヘルプ</h2>
+              <button
+                onClick={() => setShowHelp(false)}
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <HelpPage />
+          </div>
+        </div>
+      )}
+
       <footer className="bg-white border-t border-gray-200 py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm text-gray-500">
