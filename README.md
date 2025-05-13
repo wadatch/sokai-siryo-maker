@@ -1,6 +1,20 @@
 # 総会資料メーカー
 
-PTA総会資料のPDFを結合し、ページ番号や議案番号を自動で付与できるWebアプリケーションです。
+[![GitHub Actions](https://github.com/wadatch/sokai-siryo-maker/actions/workflows/build.yml/badge.svg)](https://github.com/wadatch/sokai-siryo-maker/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9.5-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.2.0-blue.svg)](https://reactjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.0-38B2AC.svg)](https://tailwindcss.com/)
+
+PTA総会資料の作成を支援するWebアプリケーションです。PDFファイルの結合、ページ番号の追加、議案番号の追加などの機能を提供します。
+
+## 特徴
+
+- PDFファイルの結合
+- ページ番号の追加（カスタマイズ可能）
+- 議案番号の追加
+- ドラッグ＆ドロップによるファイル操作
+- 完全にブラウザ上で動作（プライバシー保護）
 
 ## 機能
 
