@@ -17,14 +17,16 @@ export const initGoogleAnalytics = () => {
   // Google Analyticsのスクリプトを動的に追加
   const script1 = document.createElement('script');
   script1.async = true;
-  script1.src = 'https://www.googletagmanager.com/gtag/js?id=' + measurementId;
+  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
   document.head.appendChild(script1);
 
-  // 初期化スクリプト
-  window.dataLayer = window.dataLayer || [];
-  window.gtag = function() {
-    window.dataLayer.push(arguments);
-  };
-  window.gtag('js', new Date());
-  window.gtag('config', measurementId);
+  // 初期化スクリプトを動的に追加
+  const script2 = document.createElement('script');
+  script2.innerHTML = `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${measurementId}');
+  `;
+  document.head.appendChild(script2);
 }; 
