@@ -49,13 +49,23 @@ jobs:
       - name: Replace environment variables in HTML
         run: |
           if [ -n "${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}" ]; then
-            SEARCH_CONSOLE_META="<meta name=\"google-site-verification\" content=\"${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}\" />"
+            SEARCH_CONSOLE_META="    <meta name=\"google-site-verification\" content=\"${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}\" />"
           else
             SEARCH_CONSOLE_META=""
           fi
-          sed -i "s|<!-- %VITE_GOOGLE_SEARCH_CONSOLE_META% -->|${SEARCH_CONSOLE_META}|g" dist/index.html
-          echo "Updated HTML with search console meta tag"
-          grep -A2 -B2 "google-site-verification\|VITE_GOOGLE_SEARCH_CONSOLE_META" dist/index.html || true
+          
+          # HTMLファイルの内容を確認
+          echo "Before replacement:"
+          grep -n "VITE_GOOGLE_SEARCH_CONSOLE_META" dist/index.html || true
+          
+          # より確実な置換（空白文字やパターンの違いに対応）
+          sed -i '/VITE_GOOGLE_SEARCH_CONSOLE_META/c\'"${SEARCH_CONSOLE_META}" dist/index.html
+          
+          # 置換結果を確認
+          echo "After replacement:"
+          grep -A2 -B2 "google-site-verification" dist/index.html || echo "No meta tag found"
+          echo "Checking if placeholder still exists:"
+          grep "VITE_GOOGLE_SEARCH_CONSOLE_META" dist/index.html || echo "Placeholder successfully removed"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
