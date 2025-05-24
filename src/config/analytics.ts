@@ -29,4 +29,22 @@ export const initGoogleAnalytics = () => {
     gtag('config', '${measurementId}');
   `;
   document.head.appendChild(script2);
+};
+
+export const initGoogleSearchConsole = () => {
+  const searchConsoleCode = import.meta.env.VITE_GOOGLE_SEARCH_CONSOLE_CODE;
+  
+  // 検証コードが設定されていない場合は初期化をスキップ
+  if (!searchConsoleCode) {
+    console.log('Google Search Console: 検証コードが設定されていないため、メタタグの追加をスキップします');
+    return;
+  }
+
+  // Google Search Console検証メタタグを動的に追加
+  const meta = document.createElement('meta');
+  meta.name = 'google-site-verification';
+  meta.content = searchConsoleCode;
+  document.head.appendChild(meta);
+  
+  console.log('Google Search Console: 検証メタタグを追加しました', searchConsoleCode);
 }; 
