@@ -33,39 +33,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Create environment file
-        run: |
-          echo "VITE_GA_MEASUREMENT_ID=${{ secrets.VITE_GA_MEASUREMENT_ID }}" > .env
-          if [ -n "${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}" ]; then
-            echo "VITE_GOOGLE_SEARCH_CONSOLE_META=<meta name=\"google-site-verification\" content=\"${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}\" />" >> .env
-          else
-            echo "VITE_GOOGLE_SEARCH_CONSOLE_META=" >> .env
-          fi
-          cat .env
-
       - name: Build
+        env:
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
+          VITE_GOOGLE_SEARCH_CONSOLE_META: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE != '' && format('<meta name="google-site-verification" content="{0}" />', secrets.GOOGLE_SEARCH_CONSOLE_CODE) || '' }}
         run: npm run build
-
-      - name: Replace environment variables in HTML
-        run: |
-          if [ -n "${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}" ]; then
-            SEARCH_CONSOLE_META="    <meta name=\"google-site-verification\" content=\"${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}\" />"
-          else
-            SEARCH_CONSOLE_META=""
-          fi
-          
-          # HTMLファイルの内容を確認
-          echo "Before replacement:"
-          grep -n "VITE_GOOGLE_SEARCH_CONSOLE_META" dist/index.html || true
-          
-          # より確実な置換（空白文字やパターンの違いに対応）
-          sed -i '/VITE_GOOGLE_SEARCH_CONSOLE_META/c\'"${SEARCH_CONSOLE_META}" dist/index.html
-          
-          # 置換結果を確認
-          echo "After replacement:"
-          grep -A2 -B2 "google-site-verification" dist/index.html || echo "No meta tag found"
-          echo "Checking if placeholder still exists:"
-          grep "VITE_GOOGLE_SEARCH_CONSOLE_META" dist/index.html || echo "Placeholder successfully removed"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
