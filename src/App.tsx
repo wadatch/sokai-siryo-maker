@@ -318,7 +318,9 @@ function App() {
       }
 
       const pdfBytes = await mergedPdf.save();
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      // Uint8ArrayをArrayBufferに変換してBlob作成時の型エラーを解消
+      const arrayBuffer = pdfBytes.buffer.slice(pdfBytes.byteOffset, pdfBytes.byteOffset + pdfBytes.byteLength) as ArrayBuffer;
+      const blob = new Blob([arrayBuffer], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -341,7 +343,7 @@ function App() {
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">総会資料メーカー</h1>
               <p className="text-sm text-gray-600 mt-2">
-                このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
+                <strong>無料で安全</strong>なPDF結合ツール。このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
                 すべての処理はお使いのブラウザ内で行われ、プライバシーが保護されます。
               </p>
             </div>
@@ -375,6 +377,64 @@ function App() {
           </div>
         </div>
       </header>
+
+      {/* サイト機能説明セクション */}
+      <section className="bg-blue-50 border-b border-blue-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center mb-6">
+            <h2 className="text-lg font-semibold text-blue-900 mb-2">
+              PTAなどの「総会資料」作成に便利な機能を実現します
+            </h2>
+            <p className="text-blue-700">
+              <strong>無料</strong>で<strong>安全</strong>にPDF結合・編集ができる、複雑な総会資料の準備を簡単に、効率的に行えるツールです
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center mb-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="font-medium text-gray-900">無料PDF結合機能</h3>
+              </div>
+              <p className="text-sm text-gray-600">
+                複数のPDFファイルを一つに<strong>無料で安全に結合</strong>できます。表紙ページや目次ページも含めて、総会資料として適切な順序で統合します。
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center mb-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                </div>
+                <h3 className="font-medium text-gray-900">ページ番号追加</h3>
+              </div>
+              <p className="text-sm text-gray-600">
+                指定したPDFに連番のページ番号を自動追加できます。番号の形式や位置もカスタマイズ可能で、総会資料に適した体裁に整えます。
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex items-center mb-3">
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M4 5a2 2 0 012-2v0a2 2 0 012 2v6.5a.5.5 0 001 0V5a2 2 0 012-2v0a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" />
+                  </svg>
+                </div>
+                <h3 className="font-medium text-gray-900">安全なプライバシー保護</h3>
+              </div>
+              <p className="text-sm text-gray-600">
+                議案番号・添付資料などのヘッダを各ページに追加できます。<strong>完全ブラウザ完結で安全</strong>、ファイルはサーバーにアップロードされません。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -602,19 +662,67 @@ function App() {
         </div>
       )}
 
-      <footer className="bg-white border-t border-gray-200 py-4">
+      <footer className="bg-white border-t border-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500">
-            {copyrightInfo.text}{' '}
-            <a
-              href={copyrightInfo.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-500"
-            >
-              {copyrightInfo.linkText}
-            </a>
-          </p>
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* 作者について */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">作者について</h3>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    ソフトウェアエンジニアをしており、中学校PTAの会長をしています
+                  </p>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    ITが分かる人にしかできない作業をできるだけ無くしたいです
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* プロジェクト情報 */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">プロジェクト情報</h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
+                  </svg>
+                  <a
+                    href="https://github.com/wadatch/sokai-siryo-maker"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-500 text-sm"
+                  >
+                    GitHub で詳細を見る
+                  </a>
+                </div>
+                <p className="text-center text-sm text-gray-500">
+                  {copyrightInfo.text}{' '}
+                  <a
+                    href={copyrightInfo.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-500"
+                  >
+                    {copyrightInfo.linkText}
+                  </a>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
