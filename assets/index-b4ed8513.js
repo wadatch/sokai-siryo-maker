@@ -158,4 +158,4 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', '${e}');
-  `,document.head.appendChild(o)};initGoogleAnalytics();client.createRoot(document.getElementById("root")).render(jsxRuntimeExports.jsx(App,{}));
+  `,document.head.appendChild(o)},addGoogleSearchConsoleMeta=()=>{const e={}.VITE_GOOGLE_SEARCH_CONSOLE_CODE;if(e){const a=document.createElement("meta");a.name="google-site-verification",a.content=e,document.head.appendChild(a),console.log("Google Search Console meta tag added:",e)}};addGoogleSearchConsoleMeta();initGoogleAnalytics();client.createRoot(document.getElementById("root")).render(jsxRuntimeExports.jsx(App,{}));
