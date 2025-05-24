@@ -27,6 +27,11 @@ jobs:
       - name: Build
         run: |
           echo "VITE_GA_MEASUREMENT_ID=${{ secrets.VITE_GA_MEASUREMENT_ID }}" >> .env
+          if [ -n "${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}" ]; then
+            echo "VITE_GOOGLE_SEARCH_CONSOLE_META=<meta name=\"google-site-verification\" content=\"${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}\" />" >> .env
+          else
+            echo "VITE_GOOGLE_SEARCH_CONSOLE_META=" >> .env
+          fi
           npm run build
 
       - name: Deploy
