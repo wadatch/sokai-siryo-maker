@@ -69,6 +69,11 @@ npm run build
 このプロジェクトはGitHub Pagesでホストされています。
 デプロイは自動的に行われ、mainブランチへのプッシュ時に実行されます。
 
+## Google Search Console 設定
+
+Google Search Consoleの所有権証明を安全に行うため、GitHub Secretsを使用した動的ファイル生成を採用しています。
+詳細な設定手順は [docs/SEARCH_CONSOLE_SETUP.md](docs/SEARCH_CONSOLE_SETUP.md) を参照してください。
+
 ## ライセンス
 
 MITライセンス
