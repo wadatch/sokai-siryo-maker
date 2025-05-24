@@ -61,13 +61,29 @@ jobs:
           echo "VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${VITE_GOOGLE_SEARCH_CONSOLE_CODE:+設定済み}"
         env:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
-          VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}
+          VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CODE }}
 
       - name: Build
         env:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
           VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}
         run: npm run build
+
+      - name: Verify build output
+        run: |
+          echo "=== ビルド結果確認 ==="
+          echo "dist ディレクトリの内容:"
+          ls -la dist/
+          echo ""
+          echo "main.js の確認:"
+          find dist -name "*.js" -exec echo "ファイル: {}" \; -exec head -5 {} \;
+          echo ""
+          echo "環境変数の値確認:"
+          echo "VITE_GA_MEASUREMENT_ID: $VITE_GA_MEASUREMENT_ID"
+          echo "VITE_GOOGLE_SEARCH_CONSOLE_CODE: $VITE_GOOGLE_SEARCH_CONSOLE_CODE"
+        env:
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
+          VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

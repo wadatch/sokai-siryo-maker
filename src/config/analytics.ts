@@ -29,14 +29,30 @@ export const initGoogleAnalytics = () => {
     gtag('config', '${measurementId}');
   `;
   document.head.appendChild(script2);
+  
+  console.log('Google Analytics: 初期化完了', measurementId);
 };
 
 export const initGoogleSearchConsole = () => {
+  console.log('🔍 Google Search Console: 初期化開始');
+  console.log('🔍 import.meta.env:', import.meta.env);
+  
   const searchConsoleCode = import.meta.env.VITE_GOOGLE_SEARCH_CONSOLE_CODE;
+  console.log('🔍 VITE_GOOGLE_SEARCH_CONSOLE_CODE:', searchConsoleCode);
+  console.log('🔍 typeof searchConsoleCode:', typeof searchConsoleCode);
+  console.log('🔍 searchConsoleCode length:', searchConsoleCode?.length);
   
   // 検証コードが設定されていない場合は初期化をスキップ
   if (!searchConsoleCode) {
-    console.log('Google Search Console: 検証コードが設定されていないため、メタタグの追加をスキップします');
+    console.warn('❌ Google Search Console: 検証コードが設定されていないため、メタタグの追加をスキップします');
+    console.log('🔍 利用可能な環境変数:', Object.keys(import.meta.env));
+    return;
+  }
+
+  // 既存のメタタグをチェック
+  const existingMeta = document.querySelector('meta[name="google-site-verification"]');
+  if (existingMeta) {
+    console.log('⚠️ Google Search Console: 既存のメタタグが見つかりました:', existingMeta);
     return;
   }
 
@@ -46,5 +62,11 @@ export const initGoogleSearchConsole = () => {
   meta.content = searchConsoleCode;
   document.head.appendChild(meta);
   
-  console.log('Google Search Console: 検証メタタグを追加しました', searchConsoleCode);
+  console.log('✅ Google Search Console: 検証メタタグを追加しました');
+  console.log('🔍 追加されたメタタグ:', meta);
+  console.log('🔍 現在のhead内容:', document.head.innerHTML);
+  
+  // 追加確認
+  const addedMeta = document.querySelector('meta[name="google-site-verification"]');
+  console.log('🔍 追加後の確認:', addedMeta);
 }; 
