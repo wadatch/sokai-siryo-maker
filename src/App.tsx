@@ -439,203 +439,250 @@ function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="space-y-6">
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200"
-              onDragOver={(e: DragEvent<HTMLDivElement>) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onDrop={handleFileDrop}
-            >
-              <input
-                type="file"
-                accept=".pdf"
-                multiple
-                onChange={handleFileChange}
-                className="hidden"
-                id="file-input"
-              />
-              <label
-                htmlFor="file-input"
-                className="cursor-pointer block"
-              >
-                <div className="space-y-2">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <div className="text-sm text-gray-600">
-                    <span className="font-medium text-blue-600 hover:text-blue-500">クリックしてファイルを選択</span>
-                    またはドラッグ＆ドロップ
-                  </div>
-                  <p className="text-xs text-gray-500">PDFファイルのみ対応</p>
+            {/* ステップ1: ファイルアップロード */}
+            <div className="relative">
+              <div className="flex items-center mb-4">
+                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full mr-3">
+                  <span className="text-sm font-bold text-blue-600">1</span>
                 </div>
-              </label>
+                <h2 className="text-lg font-semibold text-gray-900">📁 ファイルアップロード</h2>
+              </div>
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200"
+                onDragOver={(e: DragEvent<HTMLDivElement>) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onDrop={handleFileDrop}
+              >
+                <input
+                  type="file"
+                  accept=".pdf"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="file-input"
+                />
+                <label
+                  htmlFor="file-input"
+                  className="cursor-pointer block"
+                >
+                  <div className="space-y-2">
+                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium text-blue-600 hover:text-blue-500">クリックしてファイルを選択</span>
+                      またはドラッグ＆ドロップ
+                    </div>
+                    <p className="text-xs text-gray-500">PDFファイルのみ対応</p>
+                  </div>
+                </label>
+              </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  開始ページ番号
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={startPageNumberAt}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
-                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
+            {/* ステップ2: ページ番号設定 */}
+            <div className="relative">
+              <div className="flex items-center mb-4">
+                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full mr-3">
+                  <span className="text-sm font-bold text-green-600">2</span>
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900">🔢 ページ番号設定</h2>
               </div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  終了ページ番号
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={endPageNumberAt}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
-                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
+              <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                <p className="text-sm text-blue-800">
+                  <strong>📌 ページ番号について：</strong> 
+                  結合されたPDFの全ページに通し番号を付けることができます。表紙や裏表紙など、ページ番号を付けたくないページがある場合は、開始・終了ページを調整してください。
+                </p>
               </div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ページ番号の位置
-                </label>
-                <select
-                  value={pageNumberPosition}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
-                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-                  <option value="bottom">下部中央</option>
-                  <option value="top">上部中央</option>
-                </select>
-              </div>
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ページ番号のフォーマット
-                </label>
-                <select
-                  value={pageNumberFormat}
-                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
-                  className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-                  <option value="number">数字のみ</option>
-                  <option value="dash">- n -</option>
-                  <option value="page">n ページ</option>
-                </select>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ページ番号を開始するページ
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={startPageNumberAt}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">表紙を除く場合は「2」を入力</p>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ページ番号を終了するページ
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={endPageNumberAt}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
+                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">裏表紙を除く場合は最終ページ-1</p>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ページ番号の位置
+                  </label>
+                  <select
+                    value={pageNumberPosition}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
+                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="bottom">下部中央</option>
+                    <option value="top">上部中央</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ページ番号のフォーマット
+                  </label>
+                  <select
+                    value={pageNumberFormat}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
+                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="number">数字のみ</option>
+                    <option value="dash">- n -</option>
+                    <option value="page">n ページ</option>
+                  </select>
+                </div>
               </div>
             </div>
 
             {files.length > 0 && (
               <div className="space-y-4">
-                <h2 className="text-lg font-medium text-gray-900">アップロードされたファイル</h2>
+                {/* ステップ3: 資料ヘッダ設定 */}
+                <div className="flex items-center mb-4">
+                  <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full mr-3">
+                    <span className="text-sm font-bold text-purple-600">3</span>
+                  </div>
+                  <h2 className="text-lg font-semibold text-gray-900">📄 ページ順序と資料ヘッダ設定</h2>
+                </div>
                 <div className="space-y-4">
-                  {files.map((file, index) => (
-                    <div
-                      key={index}
-                      draggable
-                      className={`bg-gray-50 rounded-lg p-4 cursor-move transition-all duration-150 ease-in-out ${
-                        draggedFile === index ? 'opacity-50 scale-95 shadow-lg' : ''
-                      } ${dragOverIndex === index ? 'border-2 border-blue-500 transform translate-y-4' : 'hover:shadow-md'}`}
-                      style={{
-                        transform: dragOverIndex === index ? 'translateY(1rem)' : 'translateY(0)',
-                        transition: 'transform 150ms ease-in-out'
-                      }}
-                      onDragStart={() => handleDragStart(index)}
-                      onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e, index)}
-                      onDragLeave={handleDragLeave}
-                      onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <div className="flex items-start space-x-6">
-                        <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden relative ml-8">
-                          <div className="absolute -left-4 top-0 bottom-0 w-4 flex flex-col justify-center items-center space-y-1">
-                            <div className="w-1 h-1 rounded-full bg-gray-400"></div>
-                            <div className="w-1 h-1 rounded-full bg-gray-400"></div>
-                            <div className="w-1 h-1 rounded-full bg-gray-400"></div>
-                          </div>
-                          {file.thumbnail ? (
-                            <img
-                              src={file.thumbnail}
-                              alt={`${file.name}のサムネイル`}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-gray-900 truncate">
-                                {file.name}
-                                {file.pageCount && <span className="text-gray-500 ml-2">（{file.pageCount}ページ）</span>}
-                              </p>
+                  <div className="space-y-4">
+                    {files.map((file, index) => (
+                      <div
+                        key={index}
+                        draggable
+                        className={`bg-gray-50 rounded-lg p-4 cursor-move transition-all duration-150 ease-in-out ${
+                          draggedFile === index ? 'opacity-50 scale-95 shadow-lg' : ''
+                        } ${dragOverIndex === index ? 'border-2 border-blue-500 transform translate-y-4' : 'hover:shadow-md'}`}
+                        style={{
+                          transform: dragOverIndex === index ? 'translateY(1rem)' : 'translateY(0)',
+                          transition: 'transform 150ms ease-in-out'
+                        }}
+                        onDragStart={() => handleDragStart(index)}
+                        onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e, index)}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <div className="flex items-start space-x-6">
+                          <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden relative ml-8">
+                            <div className="absolute -left-4 top-0 bottom-0 w-4 flex flex-col justify-center items-center space-y-1">
+                              <div className="w-1 h-1 rounded-full bg-gray-400"></div>
+                              <div className="w-1 h-1 rounded-full bg-gray-400"></div>
+                              <div className="w-1 h-1 rounded-full bg-gray-400"></div>
                             </div>
-                            <button
-                              onClick={() => handleRemoveFile(index)}
-                              className="ml-2 text-gray-400 hover:text-gray-500"
-                            >
-                              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                            {file.thumbnail ? (
+                              <img
+                                src={file.thumbnail}
+                                alt={`${file.name}のサムネイル`}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                               </svg>
-                            </button>
-                          </div>
-                          <div className="mt-3 space-y-3">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                種類
-                              </label>
-                              <select
-                                value={file.agendaType}
-                                onChange={(e: ChangeEvent<HTMLSelectElement>) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
-                                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                              >
-                                <option value="none">なし</option>
-                                <option value="agenda">議案</option>
-                                <option value="attachment">添付資料</option>
-                                <option value="reference">参考資料</option>
-                              </select>
-                            </div>
-                            {file.agendaType !== 'none' && (
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                  {file.agendaType === 'agenda' ? '議案番号' : '番号'}
-                                </label>
-                                <input
-                                  type="number"
-                                  min="1"
-                                  value={file.agendaNumber}
-                                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
-                                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                />
-                              </div>
                             )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {file.name}
+                                  {file.pageCount && <span className="text-gray-500 ml-2">（{file.pageCount}ページ）</span>}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => handleRemoveFile(index)}
+                                className="ml-2 text-gray-400 hover:text-gray-500"
+                              >
+                                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            </div>
+                            <div className="mt-3 space-y-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    ページヘッダの設定
+                                  </label>
+                                  <select
+                                    value={file.agendaType}
+                                    onChange={(e: ChangeEvent<HTMLSelectElement>) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
+                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                  >
+                                    <option value="none">ヘッダなし（通常のページ）</option>
+                                    <option value="agenda">議案（第○号議案として表示）</option>
+                                    <option value="attachment">添付資料（添付資料○として表示）</option>
+                                    <option value="reference">参考資料（参考資料○として表示）</option>
+                                  </select>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    各ページの左上に表示されるヘッダーを選択してください
+                                  </p>
+                                </div>
+                                {file.agendaType !== 'none' && (
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                      {file.agendaType === 'agenda' ? '議案番号' : '番号'}
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      value={file.agendaNumber}
+                                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
+                                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                  <div className="mt-8">
+                    <div className="flex items-center mb-4">
+                      <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-full mr-3">
+                        <span className="text-sm font-bold text-orange-600">4</span>
+                      </div>
+                      <h2 className="text-lg font-semibold text-gray-900">🚀 PDF結合・生成</h2>
                     </div>
-                  ))}
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleMerge}
-                    disabled={isProcessing}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isProcessing ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        処理中...
-                      </>
-                    ) : (
-                      'PDFを結合'
-                    )}
-                  </button>
+                    <div className="flex justify-center">
+                      <button
+                        onClick={handleMerge}
+                        disabled={isProcessing}
+                        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-[240px]"
+                      >
+                        {isProcessing ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            処理中...
+                          </>
+                        ) : (
+                          'PDFを結合・生成'
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
@@ -689,6 +736,24 @@ function App() {
                     ITが分かる人にしかできない作業をできるだけ無くしたいです
                   </p>
                 </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mt-0.5">
+                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6" />
+                    </svg>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <span>お仕事のご依頼はこちら → </span>
+                    <a
+                      href="https://corp.mis.dev"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-500 font-medium"
+                    >
+                      https://corp.mis.dev
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -709,22 +774,28 @@ function App() {
                     GitHub で詳細を見る
                   </a>
                 </div>
-                <p className="text-center text-sm text-gray-500">
-                  {copyrightInfo.text}{' '}
-                  <a
-                    href={copyrightInfo.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-500"
-                  >
-                    {copyrightInfo.linkText}
-                  </a>
-                </p>
               </div>
             </div>
           </div>
         </div>
       </footer>
+
+      {/* Copyright セクション */}
+      <section className="bg-gray-100 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500">
+            {copyrightInfo.text}{' '}
+            <a
+              href={copyrightInfo.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-500"
+            >
+              {copyrightInfo.linkText}
+            </a>
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
