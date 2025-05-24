@@ -65,7 +65,14 @@ jobs:
         env:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
           VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CODE }}
-        run: npm run build
+        run: |
+          echo "=== ビルド前環境変数確認 ==="
+          echo "VITE_GA_MEASUREMENT_ID length: ${#VITE_GA_MEASUREMENT_ID}"
+          echo "VITE_GOOGLE_SEARCH_CONSOLE_CODE length: ${#VITE_GOOGLE_SEARCH_CONSOLE_CODE}"
+          echo "VITE_GA_MEASUREMENT_ID first 10 chars: ${VITE_GA_MEASUREMENT_ID:0:10}..."
+          echo "VITE_GOOGLE_SEARCH_CONSOLE_CODE first 10 chars: ${VITE_GOOGLE_SEARCH_CONSOLE_CODE:0:10}..."
+          echo ""
+          npm run build
 
       - name: Verify build output
         run: |
@@ -73,12 +80,24 @@ jobs:
           echo "dist ディレクトリの内容:"
           ls -la dist/
           echo ""
-          echo "main.js の確認:"
-          find dist -name "*.js" -exec echo "ファイル: {}" \; -exec head -5 {} \;
-          echo ""
-          echo "環境変数の値確認:"
-          echo "VITE_GA_MEASUREMENT_ID: $VITE_GA_MEASUREMENT_ID"
-          echo "VITE_GOOGLE_SEARCH_CONSOLE_CODE: $VITE_GOOGLE_SEARCH_CONSOLE_CODE"
+          echo "=== JSファイル内の環境変数確認 ==="
+          for jsfile in dist/assets/*.js; do
+            echo "ファイル: $jsfile"
+            if grep -q "VITE_GA_MEASUREMENT_ID" "$jsfile"; then
+              echo "  ✅ VITE_GA_MEASUREMENT_ID が見つかりました"
+              grep -o "VITE_GA_MEASUREMENT_ID[^\"]*" "$jsfile" | head -3
+            else
+              echo "  ❌ VITE_GA_MEASUREMENT_ID が見つかりません"
+            fi
+            
+            if grep -q "VITE_GOOGLE_SEARCH_CONSOLE_CODE" "$jsfile"; then
+              echo "  ✅ VITE_GOOGLE_SEARCH_CONSOLE_CODE が見つかりました"
+              grep -o "VITE_GOOGLE_SEARCH_CONSOLE_CODE[^\"]*" "$jsfile" | head -3
+            else
+              echo "  ❌ VITE_GOOGLE_SEARCH_CONSOLE_CODE が見つかりません"
+            fi
+            echo ""
+          done
         env:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
           VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CODE }}
