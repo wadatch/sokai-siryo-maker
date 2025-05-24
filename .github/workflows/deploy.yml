@@ -46,6 +46,17 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Replace environment variables in HTML
+        run: |
+          if [ -n "${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}" ]; then
+            SEARCH_CONSOLE_META="<meta name=\"google-site-verification\" content=\"${{ secrets.GOOGLE_SEARCH_CONSOLE_CODE }}\" />"
+          else
+            SEARCH_CONSOLE_META=""
+          fi
+          sed -i "s|<!-- %VITE_GOOGLE_SEARCH_CONSOLE_META% -->|${SEARCH_CONSOLE_META}|g" dist/index.html
+          echo "Updated HTML with search console meta tag"
+          grep -A2 -B2 "google-site-verification\|VITE_GOOGLE_SEARCH_CONSOLE_META" dist/index.html || true
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
