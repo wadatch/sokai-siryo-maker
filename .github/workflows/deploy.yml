@@ -48,8 +48,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Debug Information (手動実行時のみ)
-        if: github.event_name == 'workflow_dispatch' && inputs.debug == 'true'
+      - name: Debug Information
+        env:
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
+          VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CODE }}
         run: |
           echo "=== デバッグ情報 ==="
           echo "デプロイ環境: ${{ inputs.environment }}"
@@ -59,10 +61,6 @@ jobs:
           echo "環境変数確認:"
           echo "VITE_GA_MEASUREMENT_ID: ${VITE_GA_MEASUREMENT_ID:+設定済み}"
           echo "VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${VITE_GOOGLE_SEARCH_CONSOLE_CODE:+設定済み}"
-        env:
-          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
-          VITE_GOOGLE_SEARCH_CONSOLE_CODE: ${{ secrets.VITE_GOOGLE_SEARCH_CONSOLE_CODE }}
-
       - name: Build
         env:
           VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
