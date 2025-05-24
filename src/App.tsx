@@ -38,6 +38,7 @@ function App() {
   const [draggedFile, setDraggedFile] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [pageNumberPosition, setPageNumberPosition] = useState<'bottom' | 'top'>('bottom');
+  const [pageNumberSize, setPageNumberSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
@@ -261,10 +262,28 @@ function App() {
                   pageNumberText = `${pageNumber} ページ`;
                   break;
               }
+              
+              // ページ番号のサイズを設定
+              let fontSize = 10; // デフォルト（中）
+              switch (pageNumberSize) {
+                case 'small':
+                  fontSize = 8;
+                  break;
+                case 'medium':
+                  fontSize = 10;
+                  break;
+                case 'large':
+                  fontSize = 14;
+                  break;
+              }
+              
+              // ページ番号の位置を設定
+              const yPosition = pageNumberPosition === 'top' ? height - 30 : 20;
+              
               page.drawText(pageNumberText, {
                 x: width / 2 - 10,
-                y: 20,
-                size: 10,
+                y: yPosition,
+                size: fontSize,
                 font: customFont,
                 color: rgb(0, 0, 0),
               });
@@ -546,6 +565,20 @@ function App() {
                     <option value="number">数字のみ</option>
                     <option value="dash">- n -</option>
                     <option value="page">n ページ</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    ページ番号のサイズ
+                  </label>
+                  <select
+                    value={pageNumberSize}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberSize(e.target.value as 'small' | 'medium' | 'large')}
+                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  >
+                    <option value="small">小</option>
+                    <option value="medium">中</option>
+                    <option value="large">大</option>
                   </select>
                 </div>
               </div>
