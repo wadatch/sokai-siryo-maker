@@ -35,17 +35,20 @@ export const initGoogleAnalytics = () => {
 
 export const initGoogleSearchConsole = () => {
   console.log('🔍 Google Search Console: 初期化開始');
-  console.log('🔍 import.meta.env:', import.meta.env);
   
   const searchConsoleCode = import.meta.env.VITE_GOOGLE_SEARCH_CONSOLE_CODE;
   console.log('🔍 VITE_GOOGLE_SEARCH_CONSOLE_CODE:', searchConsoleCode);
   console.log('🔍 typeof searchConsoleCode:', typeof searchConsoleCode);
   console.log('🔍 searchConsoleCode length:', searchConsoleCode?.length);
   
+  // 環境変数の確認
+  const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  console.log('🔍 環境変数確認 - GA_ID:', gaId ? '設定済み' : '未設定');
+  console.log('🔍 環境変数確認 - SEARCH_CONSOLE:', searchConsoleCode ? '設定済み' : '未設定');
+  
   // 検証コードが設定されていない場合は初期化をスキップ
   if (!searchConsoleCode) {
     console.warn('❌ Google Search Console: 検証コードが設定されていないため、メタタグの追加をスキップします');
-    console.log('🔍 利用可能な環境変数:', Object.keys(import.meta.env));
     return;
   }
 
@@ -64,7 +67,6 @@ export const initGoogleSearchConsole = () => {
   
   console.log('✅ Google Search Console: 検証メタタグを追加しました');
   console.log('🔍 追加されたメタタグ:', meta);
-  console.log('🔍 現在のhead内容:', document.head.innerHTML);
   
   // 追加確認
   const addedMeta = document.querySelector('meta[name="google-site-verification"]');
