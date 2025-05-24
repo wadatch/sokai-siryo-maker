@@ -5,6 +5,22 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Google Search Console認証 -->
+    <% if (googleSearchConsoleCode) { %>
+    <meta name="google-site-verification" content="<%= googleSearchConsoleCode %>" />
+    <% } %>
+    
+    <!-- Google Analytics -->
+    <% if (gaId) { %>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= gaId %>"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '<%= gaId %>');
+    </script>
+    <% } %>
+    
     <!-- SEO対策 -->
     <title>PDF結合ツール【無料・安全】総会資料メーカー | ブラウザ完結・プライバシー保護</title>
     <meta name="description" content="PDF結合が無料・安全にできるWebツール。PTA総会資料作成に最適。ページ番号追加、議案番号追加機能付き。完全ブラウザ完結でプライバシー保護、サーバーアップロード不要。" />

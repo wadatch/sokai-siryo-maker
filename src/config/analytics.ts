@@ -10,27 +10,19 @@ export const initGoogleAnalytics = () => {
   
   // 測定IDが設定されていない場合は初期化をスキップ
   if (!measurementId) {
-    console.log('Google Analytics: 測定IDが設定されていないため、初期化をスキップします');
+    console.log('Google Analytics: 測定IDが設定されていないため、HTMLでの初期化もスキップされます');
     return;
   }
 
-  // Google Analyticsのスクリプトを動的に追加
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(script1);
-
-  // 初期化スクリプトを動的に追加
-  const script2 = document.createElement('script');
-  script2.innerHTML = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
+  // HTMLで静的に挿入されるため、ここでの動的挿入はスキップ
+  console.log('Google Analytics: HTMLで静的に初期化済み', measurementId);
   
-  console.log('Google Analytics: 初期化完了', measurementId);
+  // Google Analyticsが正しく読み込まれているかチェック
+  if (typeof window.gtag === 'function') {
+    console.log('✅ Google Analytics: 正常に読み込まれています');
+  } else {
+    console.log('⚠️ Google Analytics: まだ読み込まれていません（HTMLからの読み込み中）');
+  }
 };
 
 export const initGoogleSearchConsole = () => {
@@ -46,29 +38,18 @@ export const initGoogleSearchConsole = () => {
   console.log('🔍 環境変数確認 - GA_ID:', gaId ? '設定済み' : '未設定');
   console.log('🔍 環境変数確認 - SEARCH_CONSOLE:', searchConsoleCode ? '設定済み' : '未設定');
   
-  // 検証コードが設定されていない場合は初期化をスキップ
+  // 検証コードが設定されていない場合
   if (!searchConsoleCode) {
-    console.warn('❌ Google Search Console: 検証コードが設定されていないため、メタタグの追加をスキップします');
+    console.warn('❌ Google Search Console: 検証コードが設定されていないため、HTMLでのメタタグ挿入もスキップされます');
     return;
   }
 
-  // 既存のメタタグをチェック
+  // HTMLで静的に挿入されたメタタグをチェック
   const existingMeta = document.querySelector('meta[name="google-site-verification"]');
   if (existingMeta) {
-    console.log('⚠️ Google Search Console: 既存のメタタグが見つかりました:', existingMeta);
+    console.log('✅ Google Search Console: HTMLで静的に追加されたメタタグが見つかりました:', existingMeta);
     return;
+  } else {
+    console.warn('⚠️ Google Search Console: メタタグが見つかりません。ビルド時の環境変数設定を確認してください');
   }
-
-  // Google Search Console検証メタタグを動的に追加
-  const meta = document.createElement('meta');
-  meta.name = 'google-site-verification';
-  meta.content = searchConsoleCode;
-  document.head.appendChild(meta);
-  
-  console.log('✅ Google Search Console: 検証メタタグを追加しました');
-  console.log('🔍 追加されたメタタグ:', meta);
-  
-  // 追加確認
-  const addedMeta = document.querySelector('meta[name="google-site-verification"]');
-  console.log('🔍 追加後の確認:', addedMeta);
 }; 
