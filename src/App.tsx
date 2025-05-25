@@ -7,6 +7,7 @@ import fontkit from "@pdf-lib/fontkit";
 import * as pdfjsLib from 'pdfjs-dist';
 import { copyrightInfo } from './config/copyright';
 import HelpPage from './components/HelpPage';
+import SEOHead from './components/SEOHead';
 
 // Google FontsからNoto Sans JPを読み込む
 const fontUrl = 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400&display=swap';
@@ -356,6 +357,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEOHead />
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
