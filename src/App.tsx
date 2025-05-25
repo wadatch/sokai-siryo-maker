@@ -455,16 +455,18 @@ function App() {
         </div>
       </section>
 
+
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
           <div className="space-y-6">
-            {/* ステップ1: ファイルアップロード */}
-            <div className="relative">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full mr-3">
-                  <span className="text-sm font-bold text-blue-600">1</span>
+            {/* ステップ1: ファイル選択 */}
+            <div className="relative pb-4">
+              <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg shadow-sm border-l-4 border-blue-500">
+                <div className="flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full mr-4 shadow-md">
+                  <span className="text-sm font-bold">1</span>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">📁 ファイルアップロード</h2>
+                <h2 className="text-xl font-bold text-gray-900">📁 ファイル選択</h2>
               </div>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors duration-200"
                 onDragOver={(e: DragEvent<HTMLDivElement>) => {
@@ -494,6 +496,7 @@ function App() {
                       またはドラッグ＆ドロップ
                     </div>
                     <p className="text-xs text-gray-500">PDFファイルのみ対応</p>
+                    <p className="text-xs text-gray-500 mt-1">💡 ファイルの順序は後で並べ替えることができます</p>
                   </div>
                 </label>
               </div>
@@ -501,11 +504,11 @@ function App() {
 
             {/* ステップ2: ページ番号設定 */}
             <div className="relative">
-              <div className="flex items-center mb-4">
-                <div className="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full mr-3">
-                  <span className="text-sm font-bold text-green-600">2</span>
+              <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg shadow-sm border-l-4 border-green-500">
+                <div className="flex items-center justify-center w-10 h-10 bg-green-500 text-white rounded-full mr-4 shadow-md">
+                  <span className="text-sm font-bold">2</span>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">🔢 ページ番号設定</h2>
+                <h2 className="text-xl font-bold text-gray-900">🔢 ページ番号設定</h2>
               </div>
               <div className="bg-blue-50 rounded-lg p-4 mb-4">
                 <p className="text-sm text-blue-800">
@@ -513,89 +516,96 @@ function App() {
                   結合されたPDFの全ページに通し番号を付けることができます。表紙や裏表紙など、ページ番号を付けたくないページがある場合は、開始・終了ページを調整してください。
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ページ番号を開始するページ
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={startPageNumberAt}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
-                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">表紙を除く場合は「2」を入力</p>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ページ番号を終了するページ
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={endPageNumberAt}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
-                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">裏表紙を除く場合は最終ページ-1</p>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ページ番号の位置
-                  </label>
-                  <select
-                    value={pageNumberPosition}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
-                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="bottom">下部中央</option>
-                    <option value="top">上部中央</option>
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ページ番号のフォーマット
-                  </label>
-                  <select
-                    value={pageNumberFormat}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
-                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="number">数字のみ</option>
-                    <option value="dash">- n -</option>
-                    <option value="page">n ページ</option>
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ページ番号のサイズ
-                  </label>
-                  <select
-                    value={pageNumberSize}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberSize(e.target.value as 'small' | 'medium' | 'large')}
-                    className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  >
-                    <option value="small">小</option>
-                    <option value="medium">中</option>
-                    <option value="large">大</option>
-                  </select>
+              <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ページ番号を開始するページ
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={startPageNumberAt}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">表紙を除く場合は「2」を入力</p>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ページ番号を終了するページ
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={endPageNumberAt}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
+                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">裏表紙を除く場合は最終ページ-1</p>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ページ番号の位置
+                    </label>
+                    <select
+                      value={pageNumberPosition}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberPosition(e.target.value as 'bottom' | 'top')}
+                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="bottom">下部中央</option>
+                      <option value="top">上部中央</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ページ番号のフォーマット
+                    </label>
+                    <select
+                      value={pageNumberFormat}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberFormat(e.target.value as 'number' | 'dash' | 'page')}
+                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="number">数字のみ</option>
+                      <option value="dash">- n -</option>
+                      <option value="page">n ページ</option>
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      ページ番号のサイズ
+                    </label>
+                    <select
+                      value={pageNumberSize}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setPageNumberSize(e.target.value as 'small' | 'medium' | 'large')}
+                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    >
+                      <option value="small">小</option>
+                      <option value="medium">中</option>
+                      <option value="large">大</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {files.length > 0 && (
-              <div className="space-y-4">
-                {/* ステップ3: 資料ヘッダ設定 */}
-                <div className="flex items-center mb-4">
-                  <div className="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full mr-3">
-                    <span className="text-sm font-bold text-purple-600">3</span>
-                  </div>
-                  <h2 className="text-lg font-semibold text-gray-900">📄 ページ順序と資料ヘッダ設定</h2>
+            {/* ステップ3: 資料ヘッダ設定 */}
+            <div className="relative pb-4">
+              <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg shadow-sm border-l-4 border-purple-500">
+                <div className="flex items-center justify-center w-10 h-10 bg-purple-500 text-white rounded-full mr-4 shadow-md">
+                  <span className="text-sm font-bold">3</span>
                 </div>
+                <h2 className="text-xl font-bold text-gray-900">📄 ページ順序と資料ヘッダ設定</h2>
+              </div>
+              {files.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
+                  <p className="text-gray-600 text-center">
+                    PDFファイルをアップロードすると、ファイルの順序を変更したり、各ファイルに議案番号や添付資料番号などのヘッダを設定できます。
+                  </p>
+                </div>
+              ) : (
                 <div className="space-y-4">
-                  <div className="space-y-4">
-                    {files.map((file, index) => (
+                  {files.map((file, index) => (
                       <div
                         key={index}
                         draggable
@@ -688,37 +698,93 @@ function App() {
                         </div>
                       </div>
                     ))}
-                  </div>
-                  <div className="mt-8">
-                    <div className="flex items-center mb-4">
-                      <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-full mr-3">
-                        <span className="text-sm font-bold text-orange-600">4</span>
-                      </div>
-                      <h2 className="text-lg font-semibold text-gray-900">🚀 PDF結合・生成</h2>
+                </div>
+              )}
+            </div>
+
+            {/* ステップ4: PDF結合・生成 */}
+            <div className="relative pb-4">
+              <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg shadow-sm border-l-4 border-orange-500">
+                <div className="flex items-center justify-center w-10 h-10 bg-orange-500 text-white rounded-full mr-4 shadow-md">
+                  <span className="text-sm font-bold">4</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">🚀 PDF結合・生成</h2>
+              </div>
+              {files.length === 0 ? (
+                <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
+                  <p className="text-gray-600 text-center">
+                    設定が完了したら、すべてのPDFを一つのファイルに結合し、ページ番号や議案番号を追加したPDFを生成できます。
+                  </p>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleMerge}
+                    disabled={isProcessing}
+                    className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-[240px]"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        処理中...
+                      </>
+                    ) : (
+                      'PDFを結合・生成'
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* ステップ5: パスワード保護（オプショナル） */}
+            <div className="relative pb-4">
+              <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg shadow-sm border-l-4 border-yellow-500">
+                <div className="flex items-center justify-center w-10 h-10 bg-yellow-500 text-white rounded-full mr-4 shadow-md">
+                  <span className="text-sm font-bold">5</span>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">🔒 パスワード保護（必要に応じて）</h2>
+              </div>
+              <div className="bg-white rounded-lg p-6 border-2 border-dashed border-orange-200">
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
                     </div>
-                    <div className="flex justify-center">
-                      <button
-                        onClick={handleMerge}
-                        disabled={isProcessing}
-                        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-[240px]"
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-orange-900 mb-2">
+                      PDFにパスワードを設定したい場合
+                    </h3>
+                    <p className="text-orange-800 mb-3">
+                      このツールで結合したPDFにパスワード保護を追加したい場合は、Adobe Acrobatの無料オンラインツールをご利用ください。
+                      ブラウザ上で簡単にパスワードを設定できます。
+                    </p>
+                    <p className="text-xs text-orange-600 mb-4 bg-orange-100 p-2 rounded">
+                      ⚠️ <strong>注意：</strong>こちらは外部サイト（Adobe公式）への案内です。無料でご利用いただけますが、当サイトとは異なりブラウザ完結ではありません。
+                      ファイルのアップロードが必要となりますので、機密性の高い文書の取り扱いについてはご自身でリスク判断をお願いします。
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <a
+                        href="https://www.adobe.com/jp/acrobat/online/password-protect-pdf.html"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-4 py-2 border border-orange-300 rounded-md shadow-sm text-sm font-medium text-orange-700 bg-white hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
                       >
-                        {isProcessing ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            処理中...
-                          </>
-                        ) : (
-                          'PDFを結合・生成'
-                        )}
-                      </button>
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        Adobe Acrobat パスワード保護ツール
+                      </a>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </main>
