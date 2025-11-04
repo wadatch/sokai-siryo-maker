@@ -362,10 +362,10 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">総会資料メーカー</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">PTA総会資料メーカー - PDF結合 無料ツール</h1>
               <p className="text-sm text-gray-600 mt-2">
-                <strong>無料で安全</strong>なPDF結合ツール。このアプリケーションは完全にブラウザ上で動作し、ファイルはサーバーにアップロードされません。
-                すべての処理はお使いのブラウザ内で行われ、プライバシーが保護されます。
+                <strong>完全無料・安全</strong>なPDF結合ツール。ブラウザ完結でサーバーアップロード不要。
+                すべての処理はお使いのブラウザ内で行われ、プライバシーが完全に保護されます。
               </p>
             </div>
             <div className="flex items-center space-x-4">
@@ -404,10 +404,10 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center mb-6">
             <h2 className="text-lg font-semibold text-blue-900 mb-2">
-              PTAなどの「総会資料」作成に便利な機能を実現します
+              【完全無料】PTA総会資料を簡単に作成できるPDF結合ツール
             </h2>
             <p className="text-blue-700">
-              <strong>無料</strong>で<strong>安全</strong>にPDF結合・編集ができる、複雑な総会資料の準備を簡単に、効率的に行えるツールです
+              PDF結合が<strong>完全無料</strong>で<strong>安全</strong>に。登録不要・回数制限なし・透かしなし。PTA総会資料やビジネス文書の作成を簡単に、効率的に行えます
             </p>
           </div>
           
@@ -419,10 +419,10 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
-                <h3 className="font-medium text-gray-900">無料PDF結合機能</h3>
+                <h3 className="font-medium text-gray-900">完全無料のPDF結合</h3>
               </div>
               <p className="text-sm text-gray-600">
-                複数のPDFファイルを一つに<strong>無料で安全に結合</strong>できます。表紙ページや目次ページも含めて、総会資料として適切な順序で統合します。
+                複数のPDFファイルを一つに<strong>完全無料で安全に結合</strong>できます。登録不要・回数制限なし・透かしなし。表紙や目次も含めて、PTA総会資料として適切な順序でPDF結合が可能です。
               </p>
             </div>
 
@@ -433,10 +433,10 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                   </svg>
                 </div>
-                <h3 className="font-medium text-gray-900">ページ番号追加</h3>
+                <h3 className="font-medium text-gray-900">ページ番号自動追加</h3>
               </div>
               <p className="text-sm text-gray-600">
-                指定したPDFに連番のページ番号を自動追加できます。番号の形式や位置もカスタマイズ可能で、総会資料に適した体裁に整えます。
+                PDF結合後に連番のページ番号を自動追加。番号の形式（数字のみ、- n -、n ページ）や位置（上部・下部）、サイズもカスタマイズ可能で、PTA総会資料に最適な体裁に整えます。
               </p>
             </div>
 
@@ -447,10 +447,10 @@ function App() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z M4 5a2 2 0 012-2v0a2 2 0 012 2v6.5a.5.5 0 001 0V5a2 2 0 012-2v0a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" />
                   </svg>
                 </div>
-                <h3 className="font-medium text-gray-900">安全なプライバシー保護</h3>
+                <h3 className="font-medium text-gray-900">完全安全・プライバシー保護</h3>
               </div>
               <p className="text-sm text-gray-600">
-                議案番号・添付資料などのヘッダを各ページに追加できます。<strong>完全ブラウザ完結で安全</strong>、ファイルはサーバーにアップロードされません。
+                議案番号・添付資料などのヘッダを各ページに追加できます。<strong>完全ブラウザ完結で安全</strong>。PDF結合時にファイルはサーバーにアップロードされず、すべてブラウザ内で処理されます。
               </p>
             </div>
           </div>
