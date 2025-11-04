@@ -4,7 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
+
+    <!-- PWA・モバイル対応 -->
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="application-name" content="総会資料メーカー" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="総会資料メーカー" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <!-- パフォーマンス最適化 -->
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+
     <!-- Google Search Console認証 -->
     <% if (googleSearchConsoleCode) { %>
     <meta name="google-site-verification" content="<%= googleSearchConsoleCode %>" />
@@ -50,7 +63,49 @@
     <!-- 追加のSEO -->
     <meta name="author" content="wadatch" />
     <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <link rel="canonical" href="https://wadatch.github.io/sokai-siryo-maker/" />
+
+    <!-- セキュリティ・プライバシー -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- 構造化データ (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "総会資料メーカー",
+      "alternateName": "PDF結合ツール",
+      "url": "https://wadatch.github.io/sokai-siryo-maker/",
+      "description": "PDF結合が無料・安全にできるWebツール。完全ブラウザ完結でプライバシー保護。PTA総会資料作成に最適。ページ番号追加、議案番号追加機能付き。",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Any",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "JPY"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "wadatch"
+      },
+      "featureList": [
+        "PDF結合",
+        "ページ番号追加",
+        "議案番号追加",
+        "ブラウザ完結",
+        "プライバシー保護",
+        "サーバーアップロード不要"
+      ],
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareHelp": {
+        "@type": "CreativeWork",
+        "url": "https://wadatch.github.io/sokai-siryo-maker/"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
