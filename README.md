@@ -69,6 +69,32 @@ npm run build
 このプロジェクトはGitHub Pagesでホストされています。
 デプロイは自動的に行われ、mainブランチへのプッシュ時に実行されます。
 
+## Google Analytics 設定
+
+Google Analyticsを有効にするには、以下の手順で設定します。
+
+### ローカル開発環境での設定
+
+1. `.env.sample`をコピーして`.env`ファイルを作成
+```bash
+cp .env.sample .env
+```
+
+2. `.env`ファイルにGoogle AnalyticsのMeasurement IDを設定
+```bash
+VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+### GitHub Pages（本番環境）での設定
+
+1. GitHubリポジトリの「Settings」→「Secrets and variables」→「Actions」にアクセス
+2. 「New repository secret」をクリック
+3. 以下のSecretを追加：
+   - Name: `VITE_GA_MEASUREMENT_ID`
+   - Value: あなたのGA4測定ID（例: `G-XXXXXXXXXX`）
+
+設定後、mainブランチにプッシュすると自動的にGoogle Analyticsが有効化されます。
+
 ## Google Search Console 設定
 
 Google Search Consoleの所有権証明を安全に行うため、GitHub Secretsを使用した動的ファイル生成を採用しています。
