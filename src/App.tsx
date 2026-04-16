@@ -26,6 +26,7 @@ interface FileWithAgenda {
   name: string;
   agendaType: AgendaType;
   agendaNumber: number;
+  showAgendaNumber: boolean;
   pageCount?: number;
   thumbnail?: string;
 }
@@ -42,6 +43,9 @@ function App() {
   const [pageNumberSize, setPageNumberSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [isDraggingOverStep3, setIsDraggingOverStep3] = useState(false);
+
+  const totalPages = files.reduce((sum, file) => sum + (file.pageCount || 0), 0);
 
   const generateThumbnail = async (file: File): Promise<string> => {
     try {
@@ -82,6 +86,7 @@ function App() {
               name: file.name,
               agendaType: 'none' as AgendaType,
               agendaNumber: 1,
+              showAgendaNumber: true,
               pageCount: pdf.getPageCount(),
               thumbnail
             };
@@ -111,13 +116,42 @@ function App() {
     ));
   };
 
-  const handleAgendaNumberChange = (index: number, number: number) => {
-    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) => 
-      i === index ? { ...item, agendaNumber: number } : item
+  const handleAgendaNumberChange = (index: number, value: number | string) => {
+    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) =>
+      i === index ? { ...item, agendaNumber: value as number } : item
     ));
   };
 
-  const handleDragStart = (index: number) => {
+  const handleAgendaNumberBlur = (index: number) => {
+    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) => {
+      if (i !== index) return item;
+      const n = Number(item.agendaNumber);
+      return { ...item, agendaNumber: isNaN(n) || n < 1 ? 1 : n };
+    }));
+  };
+
+  const handleShowAgendaNumberChange = (index: number, show: boolean) => {
+    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) =>
+      i === index ? { ...item, showAgendaNumber: show } : item
+    ));
+  };
+
+  const handleMoveFile = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= files.length) return;
+    setFiles((prev: FileWithAgenda[]) => {
+      const newFiles = [...prev];
+      [newFiles[index], newFiles[targetIndex]] = [newFiles[targetIndex], newFiles[index]];
+      return newFiles;
+    });
+  };
+
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, index: number) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'LABEL') {
+      e.preventDefault();
+      return;
+    }
     setDraggedFile(index);
   };
 
@@ -165,6 +199,7 @@ function App() {
             name: file.name,
             agendaType: 'none' as AgendaType,
             agendaNumber: 1,
+            showAgendaNumber: true,
             pageCount: pdf.getPageCount(),
             thumbnail
           };
@@ -238,7 +273,7 @@ function App() {
       }
 
       for (let i = 0; i < files.length; i++) {
-        const { file, name, agendaType, agendaNumber } = files[i];
+        const { file, name, agendaType, agendaNumber, showAgendaNumber } = files[i];
         try {
           const data = await file.arrayBuffer();
           const srcPdf = await PDFDocument.load(data);
@@ -299,10 +334,10 @@ function App() {
                   label = `第${agendaNumber}号議案`;
                   break;
                 case 'attachment':
-                  label = `添付資料${agendaNumber}`;
+                  label = showAgendaNumber ? `添付資料${agendaNumber}` : '添付資料';
                   break;
                 case 'reference':
-                  label = `参考資料${agendaNumber}`;
+                  label = showAgendaNumber ? `参考資料${agendaNumber}` : '参考資料';
                   break;
               }
               
@@ -527,24 +562,38 @@ function App() {
                     <input
                       type="number"
                       min="1"
+                      max={totalPages || undefined}
                       value={startPageNumberAt}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(e.target.value === '' ? '' as unknown as number : parseInt(e.target.value))}
+                      onBlur={() => setStartPageNumberAt((prev) => { const n = Number(prev); if (isNaN(n) || n < 1) return 1; if (totalPages > 0 && n > totalPages) return totalPages; return n; })}
                       className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
-                    <p className="text-xs text-gray-500 mt-1">表紙を除く場合は「2」を入力</p>
+                    <p className="text-xs text-gray-500 mt-1">表紙を除く場合は「2」を入力{totalPages > 0 && `（最大: ${totalPages}）`}</p>
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       ページ番号を終了するページ
                     </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={endPageNumberAt}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || 1)}
-                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">裏表紙を除く場合は最終ページ-1</p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        max={totalPages || undefined}
+                        value={endPageNumberAt}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(e.target.value === '' ? '' as unknown as number : parseInt(e.target.value))}
+                        onBlur={() => setEndPageNumberAt((prev) => { const n = Number(prev); if (isNaN(n) || n < -1) return -1; if (totalPages > 0 && n > totalPages) return totalPages; return n; })}
+                        className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEndPageNumberAt(totalPages || 1)}
+                        disabled={totalPages === 0}
+                        className="whitespace-nowrap px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        最終ページ
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">裏表紙を除く場合は最終ページ-1{totalPages > 0 && `（最大: ${totalPages}）`}</p>
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -592,17 +641,46 @@ function App() {
             </div>
 
             {/* ステップ3: 資料ヘッダ設定 */}
-            <div className="relative pb-4">
+            <div
+              className="relative pb-4"
+              onDragOver={(e: DragEvent<HTMLDivElement>) => {
+                // ファイルのドラッグのみ反応（内部の並び替えドラッグは除外）
+                if (e.dataTransfer.types.includes('Files')) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDraggingOverStep3(true);
+                }
+              }}
+              onDragLeave={(e: DragEvent<HTMLDivElement>) => {
+                // 子要素へのleaveを無視（currentTargetから本当に出た場合のみ）
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setIsDraggingOverStep3(false);
+                }
+              }}
+              onDrop={(e: DragEvent<HTMLDivElement>) => {
+                if (e.dataTransfer.types.includes('Files')) {
+                  setIsDraggingOverStep3(false);
+                  handleFileDrop(e);
+                }
+              }}
+            >
               <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg shadow-sm border-l-4 border-purple-500">
                 <div className="flex items-center justify-center w-10 h-10 bg-purple-500 text-white rounded-full mr-4 shadow-md">
                   <span className="text-sm font-bold">3</span>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">📄 ページ順序と資料ヘッダ設定</h2>
               </div>
+              {isDraggingOverStep3 && (
+                <div className="mb-4 border-2 border-dashed border-blue-400 bg-blue-50 rounded-lg p-4 text-center transition-all">
+                  <p className="text-sm text-blue-600 font-medium">ここにPDFファイルをドロップして追加</p>
+                </div>
+              )}
               {files.length === 0 ? (
                 <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
                   <p className="text-gray-600 text-center">
                     PDFファイルをアップロードすると、ファイルの順序を変更したり、各ファイルに議案番号や添付資料番号などのヘッダを設定できます。
+                    <br />
+                    <span className="text-sm text-gray-500 mt-1 inline-block">ここにPDFファイルをドラッグ＆ドロップしても追加できます</span>
                   </p>
                 </div>
               ) : (
@@ -618,14 +696,36 @@ function App() {
                           transform: dragOverIndex === index ? 'translateY(1rem)' : 'translateY(0)',
                           transition: 'transform 150ms ease-in-out'
                         }}
-                        onDragStart={() => handleDragStart(index)}
+                        onDragStart={(e: DragEvent<HTMLDivElement>) => handleDragStart(e, index)}
                         onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e, index)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
                         onDragEnd={handleDragEnd}
                       >
                         <div className="flex items-start space-x-6">
-                          <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden relative ml-8">
+                          <div className="flex-shrink-0 flex flex-col items-center justify-center space-y-1 mr-2">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleMoveFile(index, 'up'); }}
+                              disabled={index === 0}
+                              className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="上に移動"
+                            >
+                              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleMoveFile(index, 'down'); }}
+                              disabled={index === files.length - 1}
+                              className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                              title="下に移動"
+                            >
+                              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="flex-shrink-0 w-24 h-32 bg-gray-200 rounded flex items-center justify-center overflow-hidden relative ml-2">
                             <div className="absolute -left-4 top-0 bottom-0 w-4 flex flex-col justify-center items-center space-y-1">
                               <div className="w-1 h-1 rounded-full bg-gray-400"></div>
                               <div className="w-1 h-1 rounded-full bg-gray-400"></div>
@@ -668,6 +768,7 @@ function App() {
                                   </label>
                                   <select
                                     value={file.agendaType}
+                                    draggable={false}
                                     onChange={(e: ChangeEvent<HTMLSelectElement>) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                   >
@@ -681,17 +782,35 @@ function App() {
                                   </p>
                                 </div>
                                 {file.agendaType !== 'none' && (
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                      {file.agendaType === 'agenda' ? '議案番号' : '番号'}
-                                    </label>
-                                    <input
-                                      type="number"
-                                      min="1"
-                                      value={file.agendaNumber}
-                                      onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
-                                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                                    />
+                                  <div className="space-y-2">
+                                    {(file.agendaType === 'attachment' || file.agendaType === 'reference') && (
+                                      <label className="flex items-center space-x-2">
+                                        <input
+                                          type="checkbox"
+                                          draggable={false}
+                                          checked={file.showAgendaNumber}
+                                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleShowAgendaNumberChange(index, e.target.checked)}
+                                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span className="text-sm text-gray-700">番号をつける</span>
+                                      </label>
+                                    )}
+                                    {(file.agendaType === 'agenda' || file.showAgendaNumber) && (
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                          {file.agendaType === 'agenda' ? '議案番号' : '番号'}
+                                        </label>
+                                        <input
+                                          type="number"
+                                          draggable={false}
+                                          min="1"
+                                          value={file.agendaNumber}
+                                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, e.target.value === '' ? '' : parseInt(e.target.value))}
+                                          onBlur={() => handleAgendaNumberBlur(index)}
+                                          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
