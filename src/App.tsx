@@ -116,10 +116,18 @@ function App() {
     ));
   };
 
-  const handleAgendaNumberChange = (index: number, number: number) => {
+  const handleAgendaNumberChange = (index: number, value: number | string) => {
     setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) =>
-      i === index ? { ...item, agendaNumber: number } : item
+      i === index ? { ...item, agendaNumber: value as number } : item
     ));
+  };
+
+  const handleAgendaNumberBlur = (index: number) => {
+    setFiles((prev: FileWithAgenda[]) => prev.map((item: FileWithAgenda, i: number) => {
+      if (i !== index) return item;
+      const n = Number(item.agendaNumber);
+      return { ...item, agendaNumber: isNaN(n) || n < 1 ? 1 : n };
+    }));
   };
 
   const handleShowAgendaNumberChange = (index: number, show: boolean) => {
@@ -138,7 +146,12 @@ function App() {
     });
   };
 
-  const handleDragStart = (index: number) => {
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, index: number) => {
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'LABEL') {
+      e.preventDefault();
+      return;
+    }
     setDraggedFile(index);
   };
 
@@ -551,7 +564,8 @@ function App() {
                       min="1"
                       max={totalPages || undefined}
                       value={startPageNumberAt}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(parseInt(e.target.value) || 1)}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setStartPageNumberAt(e.target.value === '' ? '' as unknown as number : parseInt(e.target.value))}
+                      onBlur={() => setStartPageNumberAt((prev) => { const n = Number(prev); if (isNaN(n) || n < 1) return 1; if (totalPages > 0 && n > totalPages) return totalPages; return n; })}
                       className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">表紙を除く場合は「2」を入力{totalPages > 0 && `（最大: ${totalPages}）`}</p>
@@ -560,14 +574,25 @@ function App() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       ページ番号を終了するページ
                     </label>
-                    <input
-                      type="number"
-                      min="-1"
-                      max={totalPages || undefined}
-                      value={endPageNumberAt}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(parseInt(e.target.value) || -1)}
-                      className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="-1"
+                        max={totalPages || undefined}
+                        value={endPageNumberAt}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => setEndPageNumberAt(e.target.value === '' ? '' as unknown as number : parseInt(e.target.value))}
+                        onBlur={() => setEndPageNumberAt((prev) => { const n = Number(prev); if (isNaN(n) || n < -1) return -1; if (totalPages > 0 && n > totalPages) return totalPages; return n; })}
+                        className="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEndPageNumberAt(totalPages || 1)}
+                        disabled={totalPages === 0}
+                        className="whitespace-nowrap px-3 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        最終ページ
+                      </button>
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">裏表紙を除く場合は最終ページ-1{totalPages > 0 && `（最大: ${totalPages}）`}</p>
                   </div>
                   <div className="flex-1">
@@ -671,7 +696,7 @@ function App() {
                           transform: dragOverIndex === index ? 'translateY(1rem)' : 'translateY(0)',
                           transition: 'transform 150ms ease-in-out'
                         }}
-                        onDragStart={() => handleDragStart(index)}
+                        onDragStart={(e: DragEvent<HTMLDivElement>) => handleDragStart(e, index)}
                         onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e, index)}
                         onDragLeave={handleDragLeave}
                         onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
@@ -743,6 +768,7 @@ function App() {
                                   </label>
                                   <select
                                     value={file.agendaType}
+                                    draggable={false}
                                     onChange={(e: ChangeEvent<HTMLSelectElement>) => handleAgendaTypeChange(index, e.target.value as AgendaType)}
                                     className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                   >
@@ -761,6 +787,7 @@ function App() {
                                       <label className="flex items-center space-x-2">
                                         <input
                                           type="checkbox"
+                                          draggable={false}
                                           checked={file.showAgendaNumber}
                                           onChange={(e: ChangeEvent<HTMLInputElement>) => handleShowAgendaNumberChange(index, e.target.checked)}
                                           className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -775,9 +802,11 @@ function App() {
                                         </label>
                                         <input
                                           type="number"
+                                          draggable={false}
                                           min="1"
                                           value={file.agendaNumber}
-                                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, parseInt(e.target.value) || 1)}
+                                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleAgendaNumberChange(index, e.target.value === '' ? '' : parseInt(e.target.value))}
+                                          onBlur={() => handleAgendaNumberBlur(index)}
                                           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                         />
                                       </div>
