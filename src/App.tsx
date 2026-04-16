@@ -43,6 +43,7 @@ function App() {
   const [pageNumberSize, setPageNumberSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [isDraggingOverStep3, setIsDraggingOverStep3] = useState(false);
 
   const totalPages = files.reduce((sum, file) => sum + (file.pageCount || 0), 0);
 
@@ -615,17 +616,46 @@ function App() {
             </div>
 
             {/* ステップ3: 資料ヘッダ設定 */}
-            <div className="relative pb-4">
+            <div
+              className="relative pb-4"
+              onDragOver={(e: DragEvent<HTMLDivElement>) => {
+                // ファイルのドラッグのみ反応（内部の並び替えドラッグは除外）
+                if (e.dataTransfer.types.includes('Files')) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDraggingOverStep3(true);
+                }
+              }}
+              onDragLeave={(e: DragEvent<HTMLDivElement>) => {
+                // 子要素へのleaveを無視（currentTargetから本当に出た場合のみ）
+                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                  setIsDraggingOverStep3(false);
+                }
+              }}
+              onDrop={(e: DragEvent<HTMLDivElement>) => {
+                if (e.dataTransfer.types.includes('Files')) {
+                  setIsDraggingOverStep3(false);
+                  handleFileDrop(e);
+                }
+              }}
+            >
               <div className="flex items-center mb-4 p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg shadow-sm border-l-4 border-purple-500">
                 <div className="flex items-center justify-center w-10 h-10 bg-purple-500 text-white rounded-full mr-4 shadow-md">
                   <span className="text-sm font-bold">3</span>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900">📄 ページ順序と資料ヘッダ設定</h2>
               </div>
+              {isDraggingOverStep3 && (
+                <div className="mb-4 border-2 border-dashed border-blue-400 bg-blue-50 rounded-lg p-4 text-center transition-all">
+                  <p className="text-sm text-blue-600 font-medium">ここにPDFファイルをドロップして追加</p>
+                </div>
+              )}
               {files.length === 0 ? (
                 <div className="bg-gray-50 rounded-lg p-6 border-2 border-dashed border-gray-300">
                   <p className="text-gray-600 text-center">
                     PDFファイルをアップロードすると、ファイルの順序を変更したり、各ファイルに議案番号や添付資料番号などのヘッダを設定できます。
+                    <br />
+                    <span className="text-sm text-gray-500 mt-1 inline-block">ここにPDFファイルをドラッグ＆ドロップしても追加できます</span>
                   </p>
                 </div>
               ) : (
