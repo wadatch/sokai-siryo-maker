@@ -434,6 +434,22 @@ function App() {
         </div>
       </header>
 
+      {/* 新バージョンの案内 */}
+      <section className="bg-indigo-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+          <p className="flex-1">
+            <strong>新バージョン「総会資料メーカー2」を公開しました。</strong>
+            PDFをページ単位で並べ替え・回転でき、ヘッダー・フッターの自由設定、ページごとのページ番号設定、パスワード保護、BIZ UDフォントに対応しています。このページ（初代）も引き続きご利用いただけます。
+          </p>
+          <a
+            href="https://wadatch.github.io/sokai-siryo-maker2/"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md bg-white px-4 py-2 font-semibold text-indigo-700 shadow-sm hover:bg-indigo-50"
+          >
+            総会資料メーカー2 を使ってみる →
+          </a>
+        </div>
+      </section>
+
       {/* サイト機能説明セクション */}
       <section className="bg-blue-50 border-b border-blue-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
